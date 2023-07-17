@@ -80,6 +80,7 @@ class Server(QObject):
         data = client_socket.readAll().data().decode()
         client_address = client_socket.peerAddress().toString()
         client_port = client_socket.peerPort()
+        data = data.replace("\n", "")
         self.newMessage.emit(f"{client_address}> {data}")
         response = '{status: "OK", code: 200}'
         client_socket.write(response.encode())
@@ -100,7 +101,8 @@ class Client(QObject):
         client_socket = QTcpSocket()
         client_socket.connectToHost(ip, int(port))
         if client_socket.waitForConnected(1000):
-            client_socket.write(message.encode())
+            message_to_send = message #+ "\r\n"
+            client_socket.write(message_to_send.encode())
             client_socket.waitForBytesWritten(1000)
             client_socket.waitForReadyRead(3000)
             response = client_socket.readAll().data().decode()
